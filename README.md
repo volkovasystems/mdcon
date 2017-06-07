@@ -1,2 +1,2 @@
 # mdcon
-Get list of mongod database connection address.
+Get list of mongo database connection address.

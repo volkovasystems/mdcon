@@ -1,0 +1,32 @@
+{
+  "name": "mdcon",
+  "version": "0.0.0",
+  "description": "Get list of mongo database connection address.",
+  "main": "mdcon.js",
+  "scripts": {
+    "test": "mocha mdcon-test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/volkovasystems/mdcon.git"
+  },
+  "keywords": [
+    "get",
+    "list",
+    "mongo",
+    "database",
+    "connection",
+    "address"
+  ],
+  "author": "Richeve S. Bebedor <richeve.bebedor@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/volkovasystems/mdcon/issues"
+  },
+  "homepage": "https://github.com/volkovasystems/mdcon#readme",
+  "dependencies": {
+    "comex": "^0.19.0",
+    "pedon": "^0.13.0",
+    "prid": "^0.2.0"
+  }
+}
