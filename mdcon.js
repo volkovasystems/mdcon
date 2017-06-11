@@ -48,24 +48,37 @@
 	@include:
 		{
 			"comex": "comex",
+			"depher": "depher",
+			"falzy": "falzy",
 			"pedon": "pedon",
-			"prid": "prid"
+			"prid": "prid",
+			"raze": "raze"
 		}
 	@end-include
 */
 
 const comex = require( "comex" );
+const depher = require( "depher" );
+const falzy = require( "falzy" );
 const pedon = require( "pedon" );
 const prid = require( "prid" );
+const raze = require( "raze" );
 
-const mdcon = function mdcon( synchronous ){
+const mdcon = function mdcon( synchronous, option ){
 	/*;
 		@meta-configuration:
 			{
-				"synchronous": "boolean"
+				"synchronous": "boolean",
+				"option": "option"
 			}
 		@end-meta-configuration
 	*/
+
+	let parameter = raze( arguments );
+
+	synchronous = depher( parameter, BOOLEAN, false );
+
+	option = depher( parameter, OBJECT, { } );
 
 	var command = null;
 	if( pedon.LINUX || pedon.OSX ){
@@ -75,36 +88,43 @@ const mdcon = function mdcon( synchronous ){
 			.pipe( "tr -s ' '" )
 			.pipe( "xargs echo -n" )
 			.pipe( "cut -d' ' -f4" )
+			.defer( { } )
+			.format( function connection( address ){
+				if( falzy( address ) ){
+					return null;
+				}
+
+				let [ host, port ] = address.split( ":" );
+
+				return {
+					"host": host,
+					"port": port,
+					"address": address
+				};
+			} );
 
 	}else if( pedon.WINDOWS ){
+		//: @todo: Please implement this!
+		throw new Error( "platform not currently supported" );
 
 	}else{
 		throw new Error( "cannot determine platform, platform not supported" );
 	}
 
-	if( synchronous === true ){
+	if( synchronous ){
 		try{
-			return prid( "mongod", true )
-				.map( ( pid ) => command.clone( ).replace( "pid", pid ).execute( true ) )
-				.map( ( address ) => {
-					let [ host, port ] = address.split( ":" );
-
-					return {
-						"host": host,
-						"port": port,
-						"address": address
-					};
-				} );
+			return prid( "mongod", true, option )
+				.map( ( pid ) => command.clone( ).replace( "pid", pid ).execute( true, option ) );
 
 		}catch( error ){
-			throw new Error( `cannot get list of mongod , ${ error.stack }` );
+			throw new Error( `cannot get list of mongo database connection, ${ error.stack }` );
 		}
 
 	}else{
-		let catcher = prid( "mongod" )
+		let catcher = prid( "mongod", option )
 			.then( function done( error, pid ){
 				if( error ){
-					return catcher.pass( new Error( `cannot get list of mongod , ${ error.stack }` ), [ ] );
+					return catcher.pass( new Error( `cannot get list of mongo database connection, ${ error.stack }` ), [ ] );
 
 				}else{
 					let length = pid.length;
@@ -112,25 +132,20 @@ const mdcon = function mdcon( synchronous ){
 
 					return pid.reduce( ( catcher, pid ) => {
 						command.clone( ).replace( "pid", pid )
-							.execute( )( function done( error, address ){
+							.execute( option )( function done( error, address ){
 								if( error ){
-									return catcher.pass( new Error( `cannot get list of mongod , ${ error.stack }` ), [ ] );
+									command.stop( );
+
+									return catcher.pass( new Error( `cannot get list of mongo database connection, ${ error.stack }` ), [ ] );
 
 								}else{
-									let [ host, port ] = address.split( ":" );
-
-									connection.push( {
-										"host": host,
-										"port": port,
-										"address": address
-									} );
+									connection.push( address );
 
 									if( connection.length == length ){
 										return catcher.pass( null, connection );
-
-									}else{
-										return catcher;
 									}
+
+									return catcher;
 								}
 							} );
 
