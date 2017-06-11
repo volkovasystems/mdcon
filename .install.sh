@@ -5,4 +5,5 @@ falzy \
 pedon \
 prid \
 raze \
+zelf \
 --save

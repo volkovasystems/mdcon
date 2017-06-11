@@ -1,5 +1,3 @@
-"use strict";
-
 /*;
 	@module-license:
 		The MIT License (MIT)
@@ -52,7 +50,8 @@
 			"falzy": "falzy",
 			"pedon": "pedon",
 			"prid": "prid",
-			"raze": "raze"
+			"raze": "raze",
+			"zelf": "zelf"
 		}
 	@end-include
 */
@@ -63,6 +62,7 @@ const falzy = require( "falzy" );
 const pedon = require( "pedon" );
 const prid = require( "prid" );
 const raze = require( "raze" );
+const zelf = require( "zelf" );
 
 const mdcon = function mdcon( synchronous, option ){
 	/*;
@@ -121,7 +121,7 @@ const mdcon = function mdcon( synchronous, option ){
 		}
 
 	}else{
-		let catcher = prid( "mongod", option )
+		let catcher = prid.bind( zelf( this ) )( "mongod", option )
 			.then( function done( error, pid ){
 				if( error ){
 					return catcher.pass( new Error( `cannot get list of mongo database connection, ${ error.stack }` ), [ ] );
